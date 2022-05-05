@@ -1,146 +1,116 @@
 const express = require('express');
+const bcrypt = require("bcrypt");
+const { genSaltSync, hashSync, compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt")
-
 
 const app = express();
 app.use(express.json());
 const knex = require("../Model/dataBase");
 
 // get all data
-const getData = async (req, res) => {
-    a = await knex.select("*").from("usersDetail");
+const getAllData = async (req, res) => {
+    let a = await knex.select("*").from("usersDetail");
     res.send(a)
 }
 
+// get use by id
+const getUserById = async (req, res) => {
+    let user = await knex.select("*").from("usersDetail").where("ID", req.params.ID);
+    res.send(user);
+}
+
 // post data into table
-const PostData = async (req, res) => {
+const signUp = async (req, res) => {
+    const body = req.body;
+    const salt = genSaltSync(10);
+    body.PASSWORD = hashSync(body.PASSWORD, salt);
     const Data = {
         EMAIL: req.body.EMAIL,
         NAME: req.body.NAME,
-        PASSWORD: req.body.PASSWORD
+        PASSWORD: body.PASSWORD
 
     };
-    jwt.verify(req.token,"secretKey",(err,authData)=>{
-        if(err){
-            res.sendStatus(403);  //forbidden
-        }else{
-            res.json({
-                message:"Post Created",
-                authData
-            });
-        }
-    })
-//     // await knex("usersDetail").insert(Data)
-//     //     // res.send(Data)
-//     //     .then(result => {
-//     //         res.send("Record inserted Successfully")
-//     //     }).catch((err) => {
-//     //         console.log(err.sqlMessage)
-//     //         res.status(500)
-//     //         res.json(err.sqlMessage)
-//     //     })
-    // jwt.sign({ Data: Data }, "secretKey", (err, token) => {
-    //     res.json({
-    //         message: "Record inserted Successfully",
-    //         token
-    //     });
-    // })
+    await knex("usersDetail").insert(Data)
+        .then(result => {
+            res.send("Record inserted Successfully")
+        }).catch((err) => {
+            console.log(err.sqlMessage)
+            res.status(500).json({
+            message:"not inserted",
+            "err":err.sqlMessage
+            })
+        })
 }
-const verifyToken = (req, res, next) => {
-    const bearerHeader = req.headers['authorization']
-    if (typeof bearerHeader !== "undefined") {
-        const bearerToken = bearerHeader.split(" ")[1]
-        req.token = bearerToken
-        next()
-    } else {
-        res.sendStatus(403)
-    }
-}
+
+
+
 
 // postusersdetails
 const postUsersDetail = async (req, res) => {
     const Data = {
-        // USER_ID: req.body.USER_ID,
         USER_ID: req.body.USER_ID,
         TITLE: req.body.TITLE,
         DESCRIPTION: req.body.DESCRIPTION
 
     }
-    jwt.sign({ Data: Data }, "secretKey", (err, token) => {
-        res.json({
-            token,
-        });
-    })
+    await knex("postUsersDetail").insert(Data)
+
+        .then(result => {
+            res.send("post Record inserted Successfully")
+        }).catch((err) => {
+            console.log(err.sqlMessage)
+            res.status(500)
+            res.json(err.sqlMessage)
+        })
 }
-// await knex("postUsersDetail").insert(Data)
-
-//     .then(result => {
-//         res.send("Record inserted Successfully")
-//     }).catch((err) => {
-//         console.log(err.sqlMessage)
-//         res.status(500)
-//         res.json(err.sqlMessage)
-//     })
-// }
-// const loginUser = async (req, res) => {
-//     const Data = {
-//         EMAIL: req.body.EMAIL,
-//         PASSWORD: req.body.PASSWORD
-//     }
-
-//     let a = await knex.select("*").from("usersDetail").where("EMAIL", req.body.EMAIL);
-//     res.send("Login Successfull")
-// };
 
 
-// const loginUser = async (req, res) => {
-//     const Data = {
-//         EMAIL: req.body.EMAIL,
-//         PASSWORD: req.body.PASSWORD
-//     }
-//     // console.log(Data);
-//     await knex.select("*").from("usersDetail").where("EMAIL", req.body.EMAIL)
-//         .then(user => {
-//             if (user.length < 1) {
-//                 return res.status(404).json({
-//                     message: "E-mail not found"
-//                 })
-//             }
-//             bcrypt.compare(req.body.PASSWORD, user[0].PASSWORD, (err, result) => {
-//                 if (err) {
-//                     return res.status(401).json({
-//                         message: "Authantication fail"
-//                     })
-//                 }
-//                 else if (result) {
-//                     return res.status(200).json({
-//                         message: "Authantication successfull"
-//                     });
-//                 };
-//             });
-//         })
-//         .catch(err => {
-//             console.log(err);
-//             res.status(500).json({
-//                 error: err
-//             })
-//         })
-
-// }
-
+// login user
 const loginUser = async (req, res) => {
-        const Data = {
-            EMAIL: req.body.EMAIL,
-            PASSWORD: req.body.PASSWORD
-        }
-        jwt.sign({ Data: Data }, "secretKey", (err, token) => {
-            res.json({
-                token
-            });
+    const body = req.body;
+    let user = await knex.select("*").from("usersDetail").where("EMAIL", "=", req.body.EMAIL)
+
+    const Data = {
+        EMAIL: req.body.EMAIL,
+        PASSWORD: bcrypt.hashSync(req.body.PASSWORD, 10)
+    }
+
+    const result = bcrypt.compareSync(req.body.PASSWORD,Data.PASSWORD);
+    if (result) {
+        let token = jwt.sign({ Data: Data }, "Laddu", {
+            expiresIn: "1h"
+        })
+        return res.json({
+            message: "Login Successfully",
+            "data":user,
+            token: token
+        });
+    } else {
+        return res.json({
+            message: "Invalide email or password"
         })
     }
 
 
 
-module.exports = { PostData, verifyToken, postUsersDetail, loginUser, getData }
+}
+// like & dislike
+const like_dislike = async (req, res) => {
+    const Data = {
+        USER_ID: req.body.USER_ID,
+        LIKE: req.body.LIKE,
+        DISLIKE: req.body.DISLIKE
+
+    }
+    await knex("Like_Dislike").insert(Data)
+        .then(result => {
+            res.send("like & dislike Record inserted Successfully")
+        }).catch((err) => {
+            console.log(err.sqlMessage)
+            res.status(500)
+            res.json(err.sqlMessage)
+        })
+}
+
+
+module.exports = { getAllData, getUserById,signUp, postUsersDetail, loginUser, like_dislike }

@@ -8,10 +8,10 @@ var knex = require('knex')({ client: 'mysql', connection: conn });
 
 knex.raw('CREATE DATABASE Blog_App')
     .then((data) => {
-        console.log("database created.");
+        console.log('database created.');
     })
     .catch((err) => {
-        console.log("database already exist");
+        console.log('database already exist');
     })
 
 conn.database = 'Blog_App';
@@ -25,10 +25,10 @@ knex.schema
         table.string('PASSWORD')
     })
     .then((data) => {
-        console.log("table Created.");
+        console.log('usersDetail table Created.');
     })
     .catch((err) => {
-        console.log("table already exist.");
+        console.log('usersDetail table already exist.');
     })
 
 knex.schema
@@ -39,12 +39,26 @@ knex.schema
         table.string('DESCRIPTION')
     })
     .then((data) => {
-        console.log(`table Created.`);
+        console.log(`postUsersDetail table Created.`);
     })
     .catch((err) => {
-        console.log(`table already exist`);
+        console.log(`postUsersDetail table already exist`);
     })
 
+
+knex.schema
+    .createTable('Like_Dislike', function (table) {
+        table.increments('POST_ID').primary()
+        table.integer('USER_ID').unsigned().references('usersDetail.ID')
+        table.boolean('LIKE')
+        table.boolean('DISLIKE')
+    })
+    .then((data) => {
+        console.log(`like & dislike table Created.`);
+    })
+    .catch((err) => {
+        console.log(`like & dislike table already exist`);
+    })
 
 
 module.exports = knex;
