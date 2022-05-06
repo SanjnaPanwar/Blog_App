@@ -14,5 +14,6 @@ router.post("/api/post", verification, code.postUsersDetail);
 router.post("/api/login", code.loginUser);
 
 router.post("/api/like_dislike", verification, code.like_dislike)
+router.get("/api/getAllDetailsOfUser",code.getAllDetailsOfUser)
 
 module.exports = { router }

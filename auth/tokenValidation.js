@@ -6,7 +6,7 @@ const verification = (req, res, next) => {
         token = token.slice(7);
         jwt.verify(token, "Laddu", (err, decoded) => {
             if (err) {
-                res.json({
+                res.send({
                     message: "Invalide token",
                 })
             } else {
@@ -15,7 +15,7 @@ const verification = (req, res, next) => {
             }
         })
     }else {
-        res.json({
+        res.send({
             message: "Access denied unauthorized user"
         })
     }

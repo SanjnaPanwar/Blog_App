@@ -9,8 +9,8 @@ const knex = require("../Model/dataBase");
 
 // get all data
 const getAllData = async (req, res) => {
-    let a = await knex.select("*").from("usersDetail");
-    res.send(a)
+    let usersDetails = await knex.select("*").from("usersDetail");
+    res.send(usersDetails)
 }
 
 // get use by id
@@ -21,6 +21,20 @@ const getUserById = async (req, res) => {
 
 // post data into table
 const signUp = async (req, res) => {
+
+    if (!req.body.NAME || !req.body.EMAIL || !req.body.PASSWORD) {
+        res.send({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        })
+        console.log({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        });
+    }
+
     const body = req.body;
     const salt = genSaltSync(10);
     body.PASSWORD = hashSync(body.PASSWORD, salt);
@@ -35,9 +49,9 @@ const signUp = async (req, res) => {
             res.send("Record inserted Successfully")
         }).catch((err) => {
             console.log(err.sqlMessage)
-            res.status(500).json({
-            message:"not inserted",
-            "err":err.sqlMessage
+            res.status(500).send({
+                message: "not inserted",
+                "err": err.sqlMessage
             })
         })
 }
@@ -47,6 +61,20 @@ const signUp = async (req, res) => {
 
 // postusersdetails
 const postUsersDetail = async (req, res) => {
+
+    if (!req.body.USER_ID || !req.body.TITLE || !req.body.DESCRIPTION) {
+        res.send({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        })
+        console.log({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        });
+    }
+
     const Data = {
         USER_ID: req.body.USER_ID,
         TITLE: req.body.TITLE,
@@ -60,7 +88,7 @@ const postUsersDetail = async (req, res) => {
         }).catch((err) => {
             console.log(err.sqlMessage)
             res.status(500)
-            res.json(err.sqlMessage)
+            res.send(err.sqlMessage)
         })
 }
 
@@ -75,14 +103,14 @@ const loginUser = async (req, res) => {
         PASSWORD: bcrypt.hashSync(req.body.PASSWORD, 10)
     }
 
-    const result = bcrypt.compareSync(req.body.PASSWORD,Data.PASSWORD);
+    const result = bcrypt.compareSync(req.body.PASSWORD, Data.PASSWORD);
     if (result) {
         let token = jwt.sign({ Data: Data }, "Laddu", {
             expiresIn: "1h"
         })
         return res.json({
             message: "Login Successfully",
-            "data":user,
+            "data": user,
             token: token
         });
     } else {
@@ -96,21 +124,40 @@ const loginUser = async (req, res) => {
 }
 // like & dislike
 const like_dislike = async (req, res) => {
+    
+    if (!req.body.USER_ID || !req.body.LIKE || !req.body.DISLIKE) {
+        res.send({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        })
+        console.log({
+            success: false,
+            status: 400,
+            message: "something is missing in your Information"
+        });
+    }
     const Data = {
         USER_ID: req.body.USER_ID,
         LIKE: req.body.LIKE,
         DISLIKE: req.body.DISLIKE
 
     }
+
     await knex("Like_Dislike").insert(Data)
         .then(result => {
             res.send("like & dislike Record inserted Successfully")
         }).catch((err) => {
             console.log(err.sqlMessage)
             res.status(500)
-            res.json(err.sqlMessage)
+            res.send(err.sqlMessage)
         })
 }
 
+const getAllDetailsOfUser = async(req,res)=>{
+  let allTables = await knex('usersDetail').join('postUsersDetail',"usersDetail.ID","=","postUsersDetail.USER_ID").join('Like_Dislike','postUsersDetail.USER_ID','=','Like_Dislike.USER_ID').select("*")
+   res.send(allTables)
 
-module.exports = { getAllData, getUserById,signUp, postUsersDetail, loginUser, like_dislike }
+}
+
+module.exports = { getAllData, getUserById, signUp, postUsersDetail, loginUser, like_dislike,getAllDetailsOfUser }
