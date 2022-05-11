@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require("bcrypt");
-const { genSaltSync, hashSync, compareSync } = require("bcrypt");
+const {genSaltSync, hashSync, compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -124,7 +124,7 @@ const loginUser = async (req, res) => {
 }
 // like & dislike
 const like_dislike = async (req, res) => {
-    
+
     if (!req.body.USER_ID || !req.body.LIKE || !req.body.DISLIKE) {
         res.send({
             success: false,
@@ -154,10 +154,10 @@ const like_dislike = async (req, res) => {
         })
 }
 
-const getAllDetailsOfUser = async(req,res)=>{
-  let allTables = await knex('usersDetail').join('postUsersDetail',"usersDetail.ID","=","postUsersDetail.USER_ID").join('Like_Dislike','postUsersDetail.USER_ID','=','Like_Dislike.USER_ID').select("*")
-   res.send(allTables)
+const getAllDetailsOfUser = async (req, res) => {
+    let allTables = await knex('usersDetail').join('postUsersDetail', "usersDetail.ID", "=", "postUsersDetail.USER_ID").join('Like_Dislike', 'postUsersDetail.USER_ID', '=', 'Like_Dislike.USER_ID').select("*")
+    res.send(allTables)
 
 }
 
-module.exports = { getAllData, getUserById, signUp, postUsersDetail, loginUser, like_dislike,getAllDetailsOfUser }
+module.exports = { getAllData, getUserById, signUp, postUsersDetail, loginUser, like_dislike, getAllDetailsOfUser }
