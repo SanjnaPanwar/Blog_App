@@ -8,19 +8,19 @@ app.use(express.json());
 const knex = require("../Model/dataBase");
 
 // get all data
-const getAllData = async (req, res) => {
-    let usersDetails = await knex.select("*").from("usersDetail");
+const getAllData =  (req, res) => {
+    let usersDetails =  knex.select("*").from("usersDetail");
     res.send(usersDetails)
 }
 
 // get use by id
-const getUserById = async (req, res) => {
-    let user = await knex.select("*").from("usersDetail").where("ID", req.params.ID);
+const getUserById =  (req, res) => {
+    let user =  knex.select("*").from("usersDetail").where("ID", req.params.ID);
     res.send(user);
 }
 
 // post data into table
-const signUp = async (req, res) => {
+const signUp =  (req, res) => {
 
     if (!req.body.NAME || !req.body.EMAIL || !req.body.PASSWORD) {
         res.send({
@@ -44,7 +44,7 @@ const signUp = async (req, res) => {
         PASSWORD: body.PASSWORD
 
     };
-    await knex("usersDetail").insert(Data)
+     knex("usersDetail").insert(Data)
         .then(result => {
             res.send("Record inserted Successfully")
         }).catch((err) => {
@@ -60,7 +60,7 @@ const signUp = async (req, res) => {
 
 
 // postusersdetails
-const postUsersDetail = async (req, res) => {
+const postUsersDetail =  (req, res) => {
 
     if (!req.body.USER_ID || !req.body.TITLE || !req.body.DESCRIPTION) {
         res.send({
@@ -81,7 +81,7 @@ const postUsersDetail = async (req, res) => {
         DESCRIPTION: req.body.DESCRIPTION
 
     }
-    await knex("postUsersDetail").insert(Data)
+     knex("postUsersDetail").insert(Data)
 
         .then(result => {
             res.send("post Record inserted Successfully")
@@ -94,9 +94,9 @@ const postUsersDetail = async (req, res) => {
 
 
 // login user
-const loginUser = async (req, res) => {
+const loginUser =  (req, res) => {
     const body = req.body;
-    let user = await knex.select("*").from("usersDetail").where("EMAIL", "=", req.body.EMAIL)
+    let user =  knex.select("*").from("usersDetail").where("EMAIL", "=", req.body.EMAIL)
 
     const Data = {
         EMAIL: req.body.EMAIL,
@@ -123,7 +123,7 @@ const loginUser = async (req, res) => {
 
 }
 // like & dislike
-const like_dislike = async (req, res) => {
+const like_dislike =  (req, res) => {
 
     if (!req.body.USER_ID || !req.body.LIKE || !req.body.DISLIKE) {
         res.send({
@@ -144,7 +144,7 @@ const like_dislike = async (req, res) => {
 
     }
 
-    await knex("Like_Dislike").insert(Data)
+     knex("Like_Dislike").insert(Data)
         .then(result => {
             res.send("like & dislike Record inserted Successfully")
         }).catch((err) => {
@@ -154,8 +154,8 @@ const like_dislike = async (req, res) => {
         })
 }
 
-const getAllDetailsOfUser = async (req, res) => {
-    let allTables = await knex('usersDetail').join('postUsersDetail', "usersDetail.ID", "=", "postUsersDetail.USER_ID").join('Like_Dislike', 'postUsersDetail.USER_ID', '=', 'Like_Dislike.USER_ID').select("*")
+const getAllDetailsOfUser =  (req, res) => {
+    let allTables =  knex('usersDetail').join('postUsersDetail', "usersDetail.ID", "=", "postUsersDetail.USER_ID").join('Like_Dislike', 'postUsersDetail.USER_ID', '=', 'Like_Dislike.USER_ID').select("*")
     res.send(allTables)
 
 }
