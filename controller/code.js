@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require("bcrypt");
+const cookie=require("cookie-parser")
 const {genSaltSync, hashSync, compareSync } = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -105,17 +106,18 @@ const loginUser =  (req, res) => {
 
     const result = bcrypt.compareSync(req.body.PASSWORD, Data.PASSWORD);
     if (result) {
-        let token = jwt.sign({ Data: Data }, "Laddu", {
+        let token = jwt.sign({ "Data": Data }, "Laddu", {
             expiresIn: "1h"
         })
+        res.cookie("token",token)
         return res.json({
-            message: "Login Successfully",
-            "data": user,
-            token: token
-        });
+            "message": "Login Successfully",
+            // "data": user,
+            "token": token
+        })
     } else {
         return res.json({
-            message: "Invalide email or password"
+            "message": "Invalide email or password"
         })
     }
 
